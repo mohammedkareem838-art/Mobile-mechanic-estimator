@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobile Mechanic Estimate Calculator</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+      --font-body: 'Satoshi', Arial, sans-serif;
+      --color-bg: #f7f6f2;
+      --color-surface: #ffffff;
+      --color-surface-2: #f1efe8;
+      --color-border: #d7d2c8;
+      --color-text: #27231b;
+      --color-text-muted: #6d695f;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-primary-soft: #d7ebeb;
+      --color-success: #437a22;
+      --color-warning: #964219;
+    }
+    [data-theme="dark"] {
+      --color-bg: #161513;
+      --color-surface: #1d1b18;
+      --color-surface-2: #25231f;
+      --color-border: #3a3732;
+      --color-text: #ece7dc;
+      --color-text-muted: #aaa398;
+      --color-primary: #5aa6af;
+      --color-primary-hover: #79bac1;
+      --color-primary-soft: #21373a;
+      --shadow-md: 0 10px 28px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-size: var(--text-base);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--color-primary-soft);
+      display: grid;
+      place-items: center;
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+    h1 {
+      font-size: var(--text-xl);
+      margin: 0;
+      line-height: 1.1;
+    }
+    .sub {
+      margin: var(--space-2) 0 0;
+      color: var(--color-text-muted);
+      max-width: 65ch;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: var(--space-6);
+    }
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-6);
+    }
+    .section-title {
+      font-size: var(--text-lg);
+      margin: 0 0 var(--space-4);
+    }
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    .field,
+    .field-full {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .field-full { grid-column: 1 / -1; }
+    label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 0.82rem 0.9rem;
+      background: var(--color-surface);
+      color: var(--color-text);
+      font: inherit;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    .inline-note, .hint {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+    .row {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-top: var(--space-5);
+    }
+    button {
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.9rem 1.1rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-secondary {
+      background: var(--color-surface-2);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+    .summary-box {
+      display: grid;
+      gap: var(--space-3);
+    }
+    .price-line {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .price-line strong { font-size: var(--text-lg); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+    .quote-preview {
+      background: var(--color-surface-2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      white-space: pre-wrap;
+      font-size: var(--text-sm);
+      border: 1px solid var(--color-border);
+    }
+    .mini {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+    .mini-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      background: var(--color-surface-2);
+    }
+    .mini-card span {
+      display: block;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .theme-toggle {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+    }
+    @media (max-width: 900px) {
+      .grid, .fields, .mini {
+        grid-template-columns: 1fr;
+      }
+      .wrap { padding: var(--space-4); }
+      .card { padding: var(--space-4); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="brand">
+          <div class="logo">MM</div>
+          <div>
+            <h1>Mobile Mechanic Estimate Calculator</h1>
+          </div>
+        </div>
+        <p class="sub">Built for your Atlanta mobile mechanic business with common jobs, labor, parts, travel, shop supplies, discounts, and a ready-to-send quote summary.</p>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button">Toggle theme</button>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2 class="section-title">Estimate inputs</h2>
+        <div class="fields">
+          <div class="field-full">
+            <label for="service">Service</label>
+            <select id="service"></select>
+            <div class="inline-note">Pick a preset, then adjust labor time or charges for that specific vehicle.</div>
+          </div>
+
+          <div class="field">
+            <label for="customer">Customer name</label>
+            <input id="customer" type="text" placeholder="Customer name" />
+          </div>
+
+          <div class="field">
+            <label for="vehicle">Vehicle</label>
+            <input id="vehicle" type="text" placeholder="Year Make Model" />
+          </div>
+
+          <div class="field">
+            <label for="laborRate">Labor rate ($/hr)</label>
+            <input id="laborRate" type="number" min="0" step="1" value="130" />
+          </div>
+
+          <div class="field">
+            <label for="laborHours">Base labor hours</label>
+            <input id="laborHours" type="number" min="0" step="0.1" value="1.0" />
+          </div>
+
+          <div class="field">
+            <label for="extraLaborHours">Extra labor hours</label>
+            <input id="extraLaborHours" type="number" min="0" step="0.1" value="0" />
+          </div>
+
+          <div class="field">
+            <label for="parts">Parts total ($)</label>
+            <input id="parts" type="number" min="0" step="0.01" value="0" />
+          </div>
+
+          <div class="field">
+            <label for="travel">Travel / mobile fee ($)</label>
+            <input id="travel" type="number" min="0" step="0.01" value="25" />
+          </div>
+
+          <div class="field">
+            <label for="supplies">Supplies / misc. ($)</label>
+            <input id="supplies" type="number" min="0" step="0.01" value="15" />
+          </div>
+
+          <div class="field">
+            <label for="discount">Discount ($)</label>
+            <input id="discount" type="number" min="0" step="0.01" value="0" />
+          </div>
+
+          <div class="field">
+            <label for="taxRate">Sales tax on parts (%)</label>
+            <input id="taxRate" type="number" min="0" step="0.01" value="0" />
+          </div>
+
+          <div class="field-full">
+            <label for="notes">Notes</label>
+            <textarea id="notes" placeholder="Add notes like seized hardware risk, vehicle-specific access, or recommended related repairs."></textarea>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn-primary" id="copyBtn" type="button">Copy estimate</button>
+          <button class="btn-secondary" id="resetBtn" type="button">Reset</button>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="pill">Targeting strong hourly pricing</div>
+        <div class="mini">
+          <div class="mini-card">
+            <span>Total labor hours</span>
+            <strong id="displayHours">0.0</strong>
+          </div>
+          <div class="mini-card">
+            <span>Labor total</span>
+            <strong id="displayLabor">$0.00</strong>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <div class="price-line"><span>Labor</span><span id="laborTotal">$0.00</span></div>
+          <div class="price-line"><span>Parts</span><span id="partsTotal">$0.00</span></div>
+          <div class="price-line"><span>Tax on parts</span><span id="taxTotal">$0.00</span></div>
+          <div class="price-line"><span>Travel fee</span><span id="travelTotal">$0.00</span></div>
+          <div class="price-line"><span>Supplies</span><span id="suppliesTotal">$0.00</span></div>
+          <div class="price-line"><span>Discount</span><span id="discountTotal">-$0.00</span></div>
+          <div class="price-line"><strong>Estimated total</strong><strong id="grandTotal">$0.00</strong></div>
+        </div>
+
+        <p class="hint" style="margin-top: 1rem;">Estimate only. Final price may change after inspection, exact parts lookup, rust/seized hardware, or vehicle-specific access issues.</p>
+
+        <h3 class="section-title" style="margin-top: 1.5rem;">Quote preview</h3>
+        <div id="quotePreview" class="quote-preview"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const services = [
+      { name: 'Diagnostic / inspection', hours: 1.0, supplies: 0, travel: 25 },
+      { name: 'Brake pads replacement (per axle)', hours: 1.2, supplies: 15, travel: 25 },
+      { name: 'Brake pads and rotors (per axle)', hours: 1.5, supplies: 15, travel: 25 },
+      { name: 'Spark plug replacement', hours: 1.5, supplies: 10, travel: 25 },
+      { name: 'Ignition coil replacement', hours: 1.0, supplies: 10, travel: 25 },
+      { name: 'Valve cover gasket replacement', hours: 2.2, supplies: 20, travel: 25 },
+      { name: 'Starter replacement', hours: 1.8, supplies: 15, travel: 25 },
+      { name: 'Alternator replacement', hours: 1.6, supplies: 15, travel: 25 },
+      { name: 'Battery replacement', hours: 0.5, supplies: 5, travel: 25 },
+      { name: 'Serpentine belt replacement', hours: 0.8, supplies: 10, travel: 25 },
+      { name: 'Radiator replacement', hours: 2.4, supplies: 20, travel: 30 },
+      { name: 'Fuel injector replacement', hours: 2.5, supplies: 20, travel: 30 },
+      { name: 'Window regulator replacement', hours: 1.7, supplies: 10, travel: 25 },
+      { name: 'Control arm replacement', hours: 2.0, supplies: 15, travel: 30 },
+      { name: 'Strut replacement', hours: 2.2, supplies: 15, travel: 30 },
+      { name: 'Wheel bearing / hub replacement', hours: 2.0, supplies: 15, travel: 30 },
+      { name: 'Timing belt / timing chain quote', hours: 3.0, supplies: 25, travel: 35 },
+      { name: 'Custom repair', hours: 1.0, supplies: 15, travel: 25 }
+    ];
+
+    const serviceEl = document.getElementById('service');
+    const customerEl = document.getElementById('customer');
+    const vehicleEl = document.getElementById('vehicle');
+    const laborRateEl = document.getElementById('laborRate');
+    const laborHoursEl = document.getElementById('laborHours');
+    const extraLaborHoursEl = document.getElementById('extraLaborHours');
+    const partsEl = document.getElementById('parts');
+    const travelEl = document.getElementById('travel');
+    const suppliesEl = document.getElementById('supplies');
+    const discountEl = document.getElementById('discount');
+    const taxRateEl = document.getElementById('taxRate');
+    const notesEl = document.getElementById('notes');
+
+    const fmt = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0);
+    const num = el => Math.max(0, parseFloat(el.value) || 0);
+
+    services.forEach((service, index) => {
+      const opt = document.createElement('option');
+      opt.value = index;
+      opt.textContent = `${service.name} (${service.hours.toFixed(1)} hr)`;
+      serviceEl.appendChild(opt);
+    });
+
+    function applyServiceDefaults() {
+      const chosen = services[parseInt(serviceEl.value, 10)] || services[0];
+      laborHoursEl.value = chosen.hours.toFixed(1);
+      suppliesEl.value = chosen.supplies.toFixed(2);
+      travelEl.value = chosen.travel.toFixed(2);
+      updateEstimate();
+    }
+
+    function buildQuoteText(data) {
+      return `MOBILE MECHANIC ESTIMATE\n\nCustomer: ${customerEl.value || 'N/A'}\nVehicle: ${vehicleEl.value || 'N/A'}\nService: ${data.serviceName}\nLabor Rate: ${fmt(data.laborRate)}/hr\nLabor Hours: ${data.totalHours.toFixed(1)}\nLabor Total: ${fmt(data.laborTotal)}\nParts: ${fmt(data.parts)}\nParts Tax: ${fmt(data.partsTax)}\nTravel Fee: ${fmt(data.travel)}\nSupplies: ${fmt(data.supplies)}\nDiscount: -${fmt(data.discount)}\nEstimated Total: ${fmt(data.total)}\n\nNotes: ${notesEl.value || 'Estimate only. Final price may change after inspection and parts confirmation.'}\n\nDisclaimer: This is an estimate only and may change based on inspection, exact parts pricing, broken or seized hardware, and vehicle-specific labor needs.`;
+    }
+
+    function updateEstimate() {
+      const serviceName = services[parseInt(serviceEl.value, 10)]?.name || 'Custom repair';
+      const laborRate = num(laborRateEl);
+      const totalHours = num(laborHoursEl) + num(extraLaborHoursEl);
+      const laborTotal = laborRate * totalHours;
+      const parts = num(partsEl);
+      const travel = num(travelEl);
+      const supplies = num(suppliesEl);
+      const discount = num(discountEl);
+      const taxRate = num(taxRateEl) / 100;
+      const partsTax = parts * taxRate;
+      const total = Math.max(0, laborTotal + parts + partsTax + travel + supplies - discount);
+
+      document.getElementById('displayHours').textContent = totalHours.toFixed(1);
+      document.getElementById('displayLabor').textContent = fmt(laborTotal);
+      document.getElementById('laborTotal').textContent = fmt(laborTotal);
+      document.getElementById('partsTotal').textContent = fmt(parts);
+      document.getElementById('taxTotal').textContent = fmt(partsTax);
+      document.getElementById('travelTotal').textContent = fmt(travel);
+      document.getElementById('suppliesTotal').textContent = fmt(supplies);
+      document.getElementById('discountTotal').textContent = '-' + fmt(discount);
+      document.getElementById('grandTotal').textContent = fmt(total);
+
+      const quoteText = buildQuoteText({ serviceName, laborRate, totalHours, laborTotal, parts, partsTax, travel, supplies, discount, total });
+      document.getElementById('quotePreview').textContent = quoteText;
+      return quoteText;
+    }
+
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('input', updateEstimate);
+      el.addEventListener('change', updateEstimate);
+    });
+
+    serviceEl.addEventListener('change', applyServiceDefaults);
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const text = updateEstimate();
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copyBtn');
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => btn.textContent = original, 1400);
+      } catch (e) {
+        alert('Copy failed. You can still select and copy the quote preview manually.');
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      customerEl.value = '';
+      vehicleEl.value = '';
+      partsEl.value = '0';
+      discountEl.value = '0';
+      extraLaborHoursEl.value = '0';
+      taxRateEl.value = '0';
+      notesEl.value = '';
+      laborRateEl.value = '130';
+      serviceEl.value = '0';
+      applyServiceDefaults();
+    });
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    serviceEl.value = '0';
+    applyServiceDefaults();
+  </script>
+</body>
+</html>
